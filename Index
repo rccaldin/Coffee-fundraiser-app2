@@ -1,1 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Lady of Fatima | Christ the King Festival</title>
+    <style>
+      :root {
+        --bg: #f9f1e7;
+        --panel: #fffaf3;
+        --card: #fffdf9;
+        --primary: #4b2e20;
+        --primary-dark: #321c16;
+        --secondary: #d39c62;
+        --secondary-soft: #f0d4a9;
+        --accent: #7d4735;
+        --green: #2d5a45;
+        --green-soft: #dfeee5;
+        --text: #2e221d;
+        --muted: #715e57;
+        --shadow: 0 14px 30px rgba(75, 46, 32, 0.12);
+      }
 
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #f6efe8 0%, #f8f5f2 40%, #f2e9df 100%);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 18px 120px;
+      }
+
+      .topbar {
+        border-radius: 28px;
+        background: linear-gradient(135deg, #fffaf4 0%, #f7e2ca 100%);
+        box-shadow: var(--shadow);
+        padding: 26px 22px 18px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .topbar::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(211, 156, 98, 0.28), transparent 40%);
+        pointer-events: none;
+      }
+
+      h1, h2, h3, p {
+        margin: 0;
+      }
+
+      .church-name {
+        font-size: clamp(2.1rem, 5vw, 3.25rem);
+        line-height: 1.1;
+        letter-spacing: 0.04em;
+        color: var(--primary);
+        position: relative;
+        z-index: 1;
+      }
+
+      .festival-name {
+        margin-top: 10px;
+        font-size: clamp(1.15rem, 3vw, 1.8rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--green);
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+      }
+
+      .subtitle {
+        margin-top: 18px;
+        font-size: 1rem;
+        color: var(--muted);
+        position: relative;
+        z-index: 1;
+      }
+
+      .content {
+        margin-top: 30px;
+        display: grid;
+        gap: 24px;
+      }
+
+      .panel {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(75, 46, 32, 0.08);
+        border-radius: 26px;
+        box-shadow: var(--shadow);
+        padding: 22px 18px;
+      }
+
+      .section-title {
+        font-size: 1.1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 16px;
+      }
+
+      .coffee-option {
+        position: relative;
+        background: var(--card);
+        border: 2px solid rgba(75, 46, 32, 0.1);
+        border-radius: 22px;
+        padding: 18px 16px;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      }
+
+      .coffee-option:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(75, 46, 32, 0.08);
+      }
+
+      .coffee-option.selected {
+        border-color: var(--secondary);
+        background: linear-gradient(180deg, #fffaf2 0%, #fff1db 100%);
+        box-shadow: 0 14px 30px rgba(211, 156, 98, 0.18);
+      }
+
+      .coffee-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .coffee-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 8px;
+      }
+
+      .coffee-description {
+        font-size: 0.92rem;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .milk-toggle {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .toggle-btn {
+        flex: 1;
+        border: 2px solid rgba(75, 46, 32, 0.12);
+        background: #fff;
+        border-radius: 16px;
+        padding: 14px 12px;
+        font-weight: 700;
+        color: var(--primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .toggle-btn.active {
+        background: var(--green-soft);
+        color: var(--green);
+        border-color: rgba(45, 90, 69, 0.28);
+      }
+
+      .field {
+        margin-top: 20px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      .field input {
+        width: 100%;
+        border: 2px solid rgba(75, 46, 32, 0.12);
+        background: #fff;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 1rem;
+        color: var(--text);
+        outline: none;
+      }
+
+      .field input:focus {
+        border-color: rgba(211, 156, 98, 0.9);
+        box-shadow: 0 0 0 4px rgba(211, 156, 98, 0.12);
+      }
+
+      .submit-btn {
+        width: 100%;
+        margin-top: 20px;
+        border: none;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+        padding: 16px 20px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        box-shadow: 0 16px 28px rgba(75, 46, 32, 0.2);
+      }
+
+      .submit-btn:active {
+        transform: translateY(1px);
+      }
+
+      .confirmation {
+        display: none;
+        margin-top: 18px;
+        background: linear-gradient(135deg, #edf9f1 0%, #e4f7eb 100%);
+        border: 1px solid rgba(45, 90, 69, 0.18);
+        border-radius: 16px;
+        padding: 16px;
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .confirmation.show {
+        display: block;
+      }
+
+      .status-box {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(33, 25, 22, 0.96);
+        border-top: 3px solid var(--secondary);
+        color: white;
+        padding: 14px 18px 16px;
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.18);
+      }
+
+      .status-inner {
+        max-width: 980px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .status-label {
+        font-size: 0.74rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+
+      .status-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(211, 156, 98, 0.18);
+        color: #f7d7a8;
+        border: 1px solid rgba(211, 156, 98, 0.42);
+        font-weight: 700;
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding-top: 20px;
+        }
+
+        .topbar {
+          padding: 22px 16px 16px;
+        }
+
+        .menu-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .status-inner {
+          justify-content: center;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <h1 class="church-name">Our Lady of Fatima</h1>
+        <p class="festival-name">Christ the King Festival</p>
+        <p class="subtitle">Coffee booth order form</p>
+      </header>
+
+      <main class="content">
+        <section class="panel">
+          <h2 class="section-title">Choose your coffee</h2>
+
+          <div class="menu-grid" id="menuGrid">
+            <label class="coffee-option selected">
+              <input type="radio" name="coffee" value="Sunrise Roast" checked />
+              <div class="coffee-name">Sunrise Roast</div>
+              <div class="coffee-description">A smooth, comforting coffee with a warm, rich finish.</div>
+            </label>
+
+            <label class="coffee-option">
+              <input type="radio" name="coffee" value="Creamy Maple Latte" />
+              <div class="coffee-name">Creamy Maple Latte</div>
+              <div class="coffee-description">Velvety espresso blended with a soft, sweet cream finish.</div>
+            </label>
+
+            <label class="coffee-option">
+              <input type="radio" name="coffee" value="Chocolate Velvet Mocha" />
+              <div class="coffee-name">Chocolate Velvet Mocha</div>
+              <div class="coffee-description">A rich mocha with a deep cocoa flavor and a cozy finish.</div>
+            </label>
+
+            <label class="coffee-option">
+              <input type="radio" name="coffee" value="Churchyard Cold Brew" />
+              <div class="coffee-name">Churchyard Cold Brew</div>
+              <div class="coffee-description">Bold, smooth, and refreshingly crisp for a bright morning.</div>
+            </label>
+          </div>
+
+          <div class="milk-toggle" aria-label="Milk selection">
+            <button type="button" class="toggle-btn active" data-milk="yes">Milk</button>
+            <button type="button" class="toggle-btn" data-milk="no">No Milk</button>
+          </div>
+
+          <div class="field">
+            <label for="customerName">Your name</label>
+            <input id="customerName" type="text" placeholder="Enter your name" maxlength="40" />
+          </div>
+
+          <button type="button" class="submit-btn" id="submitOrder">Place Order</button>
+
+          <div class="confirmation" id="confirmationBox">
+            Thank you! Your coffee order has been received.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <div class="status-inner">
+        <div>
+          <div class="status-label">Order</div>
+          <div class="status-name" id="statusName">Guest</div>
+        </div>
+        <div class="status-pill" id="statusValue">Received</div>
+      </div>
+    </div>
+
+    <script>
+      const options = document.querySelectorAll('.coffee-option');
+      const milkButtons = document.querySelectorAll('.toggle-btn');
+      const orderButton = document.getElementById('submitOrder');
+      const confirmationBox = document.getElementById('confirmationBox');
+      const statusName = document.getElementById('statusName');
+      const statusValue = document.getElementById('statusValue');
+      const customerInput = document.getElementById('customerName');
+
+      let milkChoice = true;
+
+      options.forEach((option) => {
+        option.addEventListener('click', () => {
+          options.forEach((item) => item.classList.remove('selected'));
+          option.classList.add('selected');
+          option.querySelector('input').checked = true;
+        });
+      });
+
+      milkButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          milkButtons.forEach((item) => item.classList.remove('active'));
+          button.classList.add('active');
+          milkChoice = button.dataset.milk === 'yes';
+        });
+      });
+
+      orderButton.addEventListener('click', () => {
+        const selectedCoffee = document.querySelector('input[name="coffee"]:checked')?.value || 'Sunrise Roast';
+        const name = (customerInput.value || 'Guest').trim();
+
+        statusName.textContent = name;
+        statusValue.textContent = 'Received';
+        confirmationBox.classList.add('show');
+        confirmationBox.textContent = `Thank you, ${name}! Your ${selectedCoffee} order has been received${milkChoice ? ' with milk' : ' without milk'}.`;
+      });
+    </script>
+  </body>
+</html>
