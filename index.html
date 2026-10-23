@@ -385,8 +385,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-      const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+      const SUPABASE_URL = 'https://qttjyeocetszugyjvuvk.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dGp5ZW9jZXRzenVneWp2dXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzcwNDEsImV4cCI6MjEwODM1MzA0MX0.jFOTobmnHpNJKEx5YlMg5R4YJGYYq_bf7Pm_GNpOC9E';
 
       const options = document.querySelectorAll('.coffee-option');
       const milkButtons = document.querySelectorAll('.toggle-btn');
@@ -413,11 +413,6 @@
       async function checkSupabaseConnection() {
         if (!supabase) {
           setStatusText('Guest', 'Setup needed');
-          return;
-        }
-
-        if (SUPABASE_URL.includes('YOUR_PROJECT_ID') || SUPABASE_ANON_KEY.includes('YOUR_')) {
-          setStatusText('Guest', 'Supabase keys needed');
           return;
         }
 
@@ -467,14 +462,8 @@
         setStatusText(name, 'Sending');
 
         if (!supabase) {
-          updateConfirmation('Supabase is not configured yet. Replace the placeholder URL and anon key in the script before testing live orders.', true);
+          updateConfirmation('Supabase is not configured yet.', true);
           setStatusText(name, 'Setup needed');
-          return;
-        }
-
-        if (SUPABASE_URL.includes('YOUR_PROJECT_ID') || SUPABASE_ANON_KEY.includes('YOUR_')) {
-          updateConfirmation('Supabase is not connected yet. Add your actual project URL and anon key to enable live saving.', true);
-          setStatusText(name, 'Keys missing');
           return;
         }
 
