@@ -40,7 +40,7 @@
       .page {
         max-width: 980px;
         margin: 0 auto;
-        padding: 32px 18px 120px;
+        padding: 32px 18px 160px;
       }
 
       .topbar {
@@ -125,6 +125,7 @@
 
       .coffee-option {
         position: relative;
+        display: block;
         background: var(--card);
         border: 2px solid rgba(75, 46, 32, 0.1);
         border-radius: 22px;
@@ -146,8 +147,18 @@
 
       .coffee-option input {
         position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         opacity: 0;
-        pointer-events: none;
+        cursor: pointer;
+        z-index: 1;
+      }
+
+      .coffee-name,
+      .coffee-description {
+        position: relative;
+        z-index: 2;
       }
 
       .coffee-name {
@@ -264,6 +275,7 @@
         color: white;
         padding: 14px 18px 16px;
         box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.18);
+        z-index: 50;
       }
 
       .status-inner {
@@ -357,8 +369,8 @@
           </div>
 
           <div class="milk-toggle" aria-label="Milk selection">
-            <button type="button" class="toggle-btn active" data-milk="yes">Milk</button>
-            <button type="button" class="toggle-btn" data-milk="no">No Milk</button>
+            <button type="button" class="toggle-btn active" data-milk="yes" aria-pressed="true">Milk</button>
+            <button type="button" class="toggle-btn" data-milk="no" aria-pressed="false">No Milk</button>
           </div>
 
           <div class="field">
@@ -386,7 +398,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const SUPABASE_URL = 'https://qttjyeocetszugyjvuvk.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dGp5ZW9jZXRzenVneWp2dXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzcwNDEsImV4cCI6MjEwODM1MzA0MX0.jFOTobmnHpNJKEx5YlMg5R4YJGYYq_bf7Pm_GNpOC9E';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dGp5ZW9jZXRzenVneWp2dXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzcwNDEsImV4cCI6MjEwODM1MzA0M';
 
       const options = document.querySelectorAll('.coffee-option');
       const milkButtons = document.querySelectorAll('.toggle-btn');
@@ -396,8 +408,16 @@
       const statusValue = document.getElementById('statusValue');
       const customerInput = document.getElementById('customerName');
 
-      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      let supabase = null;
       let milkChoice = true;
+
+      try {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+      } catch (error) {
+        console.error('Supabase client setup failed:', error);
+      }
 
       function updateConfirmation(message, isError = false) {
         confirmationBox.classList.add('show');
@@ -408,6 +428,24 @@
       function setStatusText(name, value) {
         statusName.textContent = name || 'Guest';
         statusValue.textContent = value;
+      }
+
+      function updateMilkSelection(button) {
+        milkButtons.forEach((item) => {
+          const isActive = item === button;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-pressed', String(isActive));
+        });
+        milkChoice = button.dataset.milk === 'yes';
+      }
+
+      function updateCoffeeSelection(selectedOption) {
+        options.forEach((item) => {
+          const isSelected = item === selectedOption;
+          item.classList.toggle('selected', isSelected);
+          const input = item.querySelector('input');
+          if (input) input.checked = isSelected;
+        });
       }
 
       async function checkSupabaseConnection() {
@@ -440,19 +478,14 @@
       }
 
       options.forEach((option) => {
-        option.addEventListener('click', () => {
-          options.forEach((item) => item.classList.remove('selected'));
-          option.classList.add('selected');
-          option.querySelector('input').checked = true;
-        });
+        const radio = option.querySelector('input');
+
+        option.addEventListener('click', () => updateCoffeeSelection(option));
+        radio.addEventListener('change', () => updateCoffeeSelection(option));
       });
 
       milkButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          milkButtons.forEach((item) => item.classList.remove('active'));
-          button.classList.add('active');
-          milkChoice = button.dataset.milk === 'yes';
-        });
+        button.addEventListener('click', () => updateMilkSelection(button));
       });
 
       orderButton.addEventListener('click', async () => {
