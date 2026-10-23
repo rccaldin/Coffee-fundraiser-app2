@@ -19,6 +19,7 @@
         --text: #2e221d;
         --muted: #715e57;
         --shadow: 0 14px 30px rgba(75, 46, 32, 0.12);
+        --danger: #b54545;
       }
 
       * {
@@ -247,6 +248,12 @@
         display: block;
       }
 
+      .confirmation.error {
+        background: linear-gradient(135deg, #fff1f1 0%, #ffebeb 100%);
+        border-color: rgba(181, 69, 69, 0.2);
+        color: var(--danger);
+      }
+
       .status-box {
         position: fixed;
         left: 0;
@@ -361,9 +368,7 @@
 
           <button type="button" class="submit-btn" id="submitOrder">Place Order</button>
 
-          <div class="confirmation" id="confirmationBox">
-            Thank you! Your coffee order has been received.
-          </div>
+          <div class="confirmation" id="confirmationBox"></div>
         </section>
       </main>
     </div>
@@ -374,11 +379,15 @@
           <div class="status-label">Order</div>
           <div class="status-name" id="statusName">Guest</div>
         </div>
-        <div class="status-pill" id="statusValue">Received</div>
+        <div class="status-pill" id="statusValue">Checking</div>
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+      const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+      const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
       const options = document.querySelectorAll('.coffee-option');
       const milkButtons = document.querySelectorAll('.toggle-btn');
       const orderButton = document.getElementById('submitOrder');
@@ -387,7 +396,53 @@
       const statusValue = document.getElementById('statusValue');
       const customerInput = document.getElementById('customerName');
 
+      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
       let milkChoice = true;
+
+      function updateConfirmation(message, isError = false) {
+        confirmationBox.classList.add('show');
+        confirmationBox.classList.toggle('error', isError);
+        confirmationBox.textContent = message;
+      }
+
+      function setStatusText(name, value) {
+        statusName.textContent = name || 'Guest';
+        statusValue.textContent = value;
+      }
+
+      async function checkSupabaseConnection() {
+        if (!supabase) {
+          setStatusText('Guest', 'Setup needed');
+          return;
+        }
+
+        if (SUPABASE_URL.includes('YOUR_PROJECT_ID') || SUPABASE_ANON_KEY.includes('YOUR_')) {
+          setStatusText('Guest', 'Supabase keys needed');
+          return;
+        }
+
+        try {
+          const { error } = await supabase.from('coffee_orders').select('id').limit(1);
+
+          if (error) {
+            const msg = error.message.toLowerCase();
+            if (msg.includes('does not exist') || msg.includes('relation') || msg.includes('not found')) {
+              setStatusText('Guest', 'Table missing');
+              console.error('Supabase table not created yet:', error);
+              return;
+            }
+
+            setStatusText('Guest', 'Error');
+            console.error('Supabase connection check failed:', error);
+            return;
+          }
+
+          setStatusText('Guest', 'Connected');
+        } catch (error) {
+          console.error('Supabase connection failed:', error);
+          setStatusText('Guest', 'Connection failed');
+        }
+      }
 
       options.forEach((option) => {
         option.addEventListener('click', () => {
@@ -405,15 +460,50 @@
         });
       });
 
-      orderButton.addEventListener('click', () => {
+      orderButton.addEventListener('click', async () => {
         const selectedCoffee = document.querySelector('input[name="coffee"]:checked')?.value || 'Sunrise Roast';
-        const name = (customerInput.value || 'Guest').trim();
+        const name = (customerInput.value || 'Guest').trim() || 'Guest';
 
-        statusName.textContent = name;
-        statusValue.textContent = 'Received';
-        confirmationBox.classList.add('show');
-        confirmationBox.textContent = `Thank you, ${name}! Your ${selectedCoffee} order has been received${milkChoice ? ' with milk' : ' without milk'}.`;
+        setStatusText(name, 'Sending');
+
+        if (!supabase) {
+          updateConfirmation('Supabase is not configured yet. Replace the placeholder URL and anon key in the script before testing live orders.', true);
+          setStatusText(name, 'Setup needed');
+          return;
+        }
+
+        if (SUPABASE_URL.includes('YOUR_PROJECT_ID') || SUPABASE_ANON_KEY.includes('YOUR_')) {
+          updateConfirmation('Supabase is not connected yet. Add your actual project URL and anon key to enable live saving.', true);
+          setStatusText(name, 'Keys missing');
+          return;
+        }
+
+        try {
+          const { error } = await supabase.from('coffee_orders').insert({
+            name,
+            coffee: selectedCoffee,
+            milk: milkChoice,
+            created_at: new Date().toISOString()
+          });
+
+          if (error) {
+            const errorMessage = error.message || 'Unknown Supabase insert error';
+            console.error('Supabase insert failed:', error);
+            updateConfirmation(`Order failed to save: ${errorMessage}`, true);
+            setStatusText(name, 'Failed');
+            return;
+          }
+
+          updateConfirmation(`Thank you, ${name}! Your ${selectedCoffee} order has been received${milkChoice ? ' with milk' : ' without milk'}.`);
+          setStatusText(name, 'Received');
+        } catch (error) {
+          console.error('Submit order error:', error);
+          updateConfirmation('Order could not be sent. Check your Supabase connection and table setup.', true);
+          setStatusText(name, 'Failed');
+        }
       });
+
+      window.addEventListener('DOMContentLoaded', checkSupabaseConnection);
     </script>
   </body>
 </html>
